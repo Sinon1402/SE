@@ -26,7 +26,9 @@
   // Update settings from StreamElements fields or external config
   function updateSettingsFromSE() {
     if (typeof window.fieldData !== 'undefined') {
-      // External configuration provided - parse and clean the field values
+      // External configuration provided - process the actual field values
+      console.log('Raw fieldData received:', window.fieldData);
+      
       const cleanFieldData = {};
       Object.keys(window.fieldData).forEach(key => {
         let value = window.fieldData[key];
@@ -36,26 +38,14 @@
           value = parseInt(value) || settings[key];
         }
         
-        // Clean empty or placeholder values
-        if (value === '' || value === null || value === undefined) {
-          value = settings[key]; // Keep existing default
-        }
-        
+        // Use the value as-is since it's already processed by StreamElements
         cleanFieldData[key] = value;
       });
+      
       Object.assign(settings, cleanFieldData);
-      console.log('Updated settings from fieldData:', settings);
+      console.log('FINAL settings after update:', settings);
     } else {
-      // Try to read from StreamElements fields (direct integration)
-      settings = {
-        backgroundVideo: readSE('{backgroundVideo}', ''),
-        textAppearanceDelay: parseInt(readSE('{textAppearanceDelay}', 7)) || 7,
-        alertDuration: parseInt(readSE('{alertDuration}', 13)) || 13,
-        alertText: readSE('{alertText}', 'New Subscriber'),
-        monetaryColor: readSE('{monetaryColor}', '#34D399'),
-        infoBoxBaseColor: readSE('{infoBoxBaseColor}', '#FF6B6B')
-      };
-      console.log('Updated settings from SE fields:', settings);
+      console.log('No fieldData found, using defaults');
     }
   }
 
