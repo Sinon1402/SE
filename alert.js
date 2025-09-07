@@ -44,6 +44,9 @@
       
       Object.assign(settings, cleanFieldData);
       console.log('FINAL settings after update:', settings);
+      
+      // Apply colors immediately after updating settings
+      setupColors();
     } else {
       console.log('No fieldData found, using defaults');
     }
@@ -134,6 +137,11 @@
 
   // Color and gradient setup
   function setupColors() {
+    console.log('Setting up colors with:', {
+      monetaryColor: settings.monetaryColor,
+      infoBoxBaseColor: settings.infoBoxBaseColor
+    });
+    
     // Set monetary color
     document.documentElement.style.setProperty('--monetary-color', settings.monetaryColor);
     
@@ -153,10 +161,17 @@
       document.head.appendChild(style);
     }
     style.textContent = `.info-section{background:${gradient}!important}`;
+    
+    console.log('Applied gradient:', gradient);
   }
 
   // Main alert animation
   function runAlert() {
+    console.log('Running alert with settings:', {
+      textAppearanceDelay: settings.textAppearanceDelay,
+      alertDuration: settings.alertDuration
+    });
+    
     clearTimers();
     setupVideo();
     applyResponsiveFont();
