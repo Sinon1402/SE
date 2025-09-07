@@ -15,11 +15,10 @@
 
   // Widget settings - will be updated by StreamElements
   let settings = {
-    alertSound: '',
-    alertVolume: 50,
     backgroundVideo: '',
     textAppearanceDelay: 7,
     alertDuration: 13,
+    alertText: 'New Subscriber',
     monetaryColor: '#34D399',
     infoBoxBaseColor: '#FF6B6B'
   };
@@ -27,43 +26,40 @@
   // Update settings from StreamElements fields or external config
   function updateSettingsFromSE() {
     if (typeof window.fieldData !== 'undefined') {
-      // External configuration provided - clean the field values
+      // External configuration provided - parse and clean the field values
       const cleanFieldData = {};
       Object.keys(window.fieldData).forEach(key => {
         let value = window.fieldData[key];
-        // Clean StreamElements field syntax {fieldName}
-        if (typeof value === 'string' && value.startsWith('{') && value.endsWith('}')) {
-          // Use fallback values for unconfigured fields
-          switch(key) {
-            case 'alertSound': value = ''; break;
-            case 'alertVolume': value = 50; break;
-            case 'backgroundVideo': value = ''; break;
-            case 'textAppearanceDelay': value = 7; break;
-            case 'alertDuration': value = 13; break;
-            case 'monetaryColor': value = '#34D399'; break;
-            case 'infoBoxBaseColor': value = '#FF6B6B'; break;
-            default: value = '';
-          }
+        
+        // Convert string numbers to actual numbers for certain fields
+        if (key === 'textAppearanceDelay' || key === 'alertDuration') {
+          value = parseInt(value) || settings[key];
         }
+        
+        // Clean empty or placeholder values
+        if (value === '' || value === null || value === undefined) {
+          value = settings[key]; // Keep existing default
+        }
+        
         cleanFieldData[key] = value;
       });
       Object.assign(settings, cleanFieldData);
+      console.log('Updated settings from fieldData:', settings);
     } else {
       // Try to read from StreamElements fields (direct integration)
       settings = {
-        alertSound: readSE('{alertSound}', ''),
-        alertVolume: parseInt(readSE('{alertVolume}', 50)) || 50,
         backgroundVideo: readSE('{backgroundVideo}', ''),
         textAppearanceDelay: parseInt(readSE('{textAppearanceDelay}', 7)) || 7,
         alertDuration: parseInt(readSE('{alertDuration}', 13)) || 13,
+        alertText: readSE('{alertText}', 'New Subscriber'),
         monetaryColor: readSE('{monetaryColor}', '#34D399'),
         infoBoxBaseColor: readSE('{infoBoxBaseColor}', '#FF6B6B')
       };
+      console.log('Updated settings from SE fields:', settings);
     }
   }
 
   // Widget state
-  let audio = null;
   let timers = { in: null, reveal: null, out: null };
 
   // Timer management
@@ -76,15 +72,8 @@
 
   // Audio setup and playback
   function playSound() {
-    if (!settings.alertSound) return;
-    
-    if (!audio) {
-      audio = new Audio(settings.alertSound);
-      audio.volume = Math.min(1, settings.alertVolume / 100);
-    }
-    
-    audio.currentTime = 0;
-    audio.play().catch(() => {});
+    // StreamElements handles audio automatically, no custom audio needed
+    return;
   }
 
   // Video setup
@@ -216,10 +205,6 @@
   function updateConfig(newConfig) {
     Object.assign(settings, newConfig);
     setupColors();
-    
-    if (audio && newConfig.alertVolume !== undefined) {
-      audio.volume = Math.min(1, settings.alertVolume / 100);
-    }
   }
 
   // StreamElements event handlers
@@ -252,10 +237,6 @@
   // Cleanup function
   function cleanup() {
     clearTimers();
-    if (audio) {
-      audio.pause();
-      audio = null;
-    }
   }
 
   // Initialize widget
